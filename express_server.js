@@ -67,3 +67,10 @@ app.post("/urls", (req, res) => {
   console.log("test1", req.body); // Log the POST request body to the console
   res.redirect(`/urls/${shortRandomURL}`);
 });
+
+app.post("/urls/:id/delete", (req, res) => {
+  console.log("first", req.params);
+  delete urlDatabase[req.params.id];
+  console.log("second", urlDatabase);
+  res.redirect("/urls");
+});
