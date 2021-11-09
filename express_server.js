@@ -74,3 +74,11 @@ app.post("/urls/:id/delete", (req, res) => {
   console.log("second", urlDatabase);
   res.redirect("/urls");
 });
+
+//Post to edit the URL
+app.post("/urls/:id/edit", (req, res) => {
+  console.log(urlDatabase);
+  urlDatabase[req.params.id] = req.body.longURL;
+  console.log(urlDatabase);
+  res.redirect("/urls/");
+});
