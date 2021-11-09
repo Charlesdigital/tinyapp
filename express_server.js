@@ -6,10 +6,8 @@ app.set("view engine", "ejs"); // tells express app to use EJS
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 
-function generateRandomString() {
-  return Math.floor((1 + Math.random()) * 0x1000000)
-    .toString(16);
-    .substring(1);
+const generateRandomString = function() {
+  return Math.floor((1 + Math.random()) * 0x1000000).toString(16).substring(1);
 };
 
 const urlDatabase = {
@@ -47,8 +45,20 @@ app.get("/urls/:shortURL", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+app.get("/u/:shortURL", (req, res) => {
+    const longURL = urlDatabase[req.params.shortURL]
+    if (longURL.startsWith("http")) {
+        res.redirect(longURL);
+      } else res.redirect("https://" + longURL);
+  });
+
 //---------------------------------------------------------> Post
 app.post("/urls", (req, res) => {
-  console.log(req.body);  // Log the POST request body to the console
-  res.send("Ok");         // Respond with 'Ok' (we will replace this)
+const shortRandomURL = generateRandomString();
+
+urlDatabase[shortRandomURL] = req.body.longURL
+console.log("test2", urlDatabase[shortRandomURL])
+console.log("tset 3",urlDatabase)
+  console.log("test1", req.body);  // Log the POST request body to the console
+  res.redirect(`/urls/${shortRandomURL}`);
 });
