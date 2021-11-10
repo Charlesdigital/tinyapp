@@ -20,6 +20,19 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com",
 };
 
+const users = {
+  userRandomID: {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur",
+  },
+  user2RandomID: {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk",
+  },
+};
+
 //port will not work without this
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
@@ -91,6 +104,21 @@ app.post("/login", (req, res) => {
 app.post("/logout", (req, res) => {
   res.clearCookie("username"); //delete cookie when the person logs out
   res.redirect("/urls");
+});
+
+app.post("/register", (req, res) => {
+  const email = req.body.email;
+  const password = req.body.password;
+  const userId = generateRandomString();
+  if (!email || !password) {
+    res.statusCode = 400;
+    res.send("Empty email and password.");
+  } else {
+    users[userId] = { id: userId, email: email, password: password };
+    res.cookie("user_id", userId);
+    //link the cookie to the generated ID
+    return res.redirect("/urls");
+  }
 });
 
 // app.get("/", (req, res) => {
