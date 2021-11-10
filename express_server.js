@@ -13,6 +13,14 @@ const generateRandomString = function () {
     .substring(1);
 };
 
+const lookUpUserByEmail = function (email, users) {
+  for (const user in users) {
+    if (users[user].email === email) {
+      return users[user];
+    }
+  }
+};
+
 app.use(cookieParser());
 
 const urlDatabase = {
@@ -113,6 +121,9 @@ app.post("/register", (req, res) => {
   if (!email || !password) {
     res.statusCode = 400;
     res.send("Empty email and password.");
+  } else if (lookUpUserByEmail(email, users)) {
+    res.statusCode = 400;
+    res.send("Username already created.");
   } else {
     users[userId] = { id: userId, email: email, password: password };
     res.cookie("user_id", userId);
