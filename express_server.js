@@ -51,6 +51,12 @@ app.get("/u/:shortURL", (req, res) => {
   } else res.redirect("https://" + longURL);
 });
 
+app.get("/register", (req, res) => {
+  const templateVars = { username: req.cookies["username"] };
+
+  res.render("urls_register", templateVars);
+});
+
 //---------------------------------------------------------> Post
 app.post("/urls", (req, res) => {
   const shortRandomURL = generateRandomString();
