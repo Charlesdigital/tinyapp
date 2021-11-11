@@ -73,9 +73,15 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
-  const templateVars = { username: req.cookies["username"] };
-
+  const templateVars = { user: null };
   res.render("urls_register", templateVars);
+});
+
+//login page
+app.get("/login", (req, res) => {
+  // const userId = req.session.user_id;
+  const templateVars = { user: null };
+  res.render("urls_login", templateVars);
 });
 
 //---------------------------------------------------------> Post
@@ -105,7 +111,21 @@ app.post("/urls/:id/edit", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  res.cookie("username", req.body.username); //will create cookie username is the name and req.body.username is the value
+  console.log(req.body);
+  if (req.body.email === "" || req.body.password === "") {
+    res.statusCode = 400;
+    return res.send("Empty email and password.");
+  }
+  const userInfo = lookUpUserByEmail(req.body.email);
+  if (userInfo && userInfo.password !== req.body.password) {
+    res.statusCode = 403;
+    return res.send("Wrong password");
+  }
+  if (!userInfo) {
+    res.statusCode = 403;
+    return res.send("User not found");
+  }
+  res.cookie("userId", userInfo.id); //will create cookie username is the name and req.body.username is the value
   res.redirect("/urls");
 });
 

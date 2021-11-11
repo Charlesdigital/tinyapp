@@ -18,27 +18,44 @@
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
     </div>
-  </div>
-  <% if(username) { %>
-  <form class="form-inline" action="/logout" method="POST">
-    <div class="form-group mb-2">
-      <p class="nav-item navlink" style="margin: auto"><%= username %></p>
-      <button type="submit" class="btn btn-primary">Logout</button>
-    </div>
-  </form>
-  <% } else { %>
-  <form class="form-inline" action="/login" method="POST">
-    <div class="form-group mb-2">
-      <input
-        class="form-control"
-        type="text"
-        name="username"
-        placeholder="Please enter username here"
-        style="width: 300px; margin: 1em"
-      />
-      <button type="submit" class="btn btn-primary">Login</button>
-    </div>
-  </form>
-  <% } %>
-</nav>
+    <% if(user) { %>
+    <form class="form-inline" action="/logout" method="POST">
+      <div class="form-group mb-2">
+        <!-- <p  class="nav-item navlink" style="margin: auto"><%= user.email %></p> -->
+        <p
+          style="padding-right: 20px"
+          class="nav-item navlink"
+          style="margin: auto"
+        >
+          <%= user.email %>
+        </p>
+        <button
+          type="submit"
+          class="btn btn-primary"
+          action="/logout"
+          method="POST"
+        >
+          Logout
+        </button>
+      </div>
+    </form>
+    <% } else { %>
+    <form class="form-inline" action="/register" method="GET">
+      <div class="form-group mb-2">
+        <button
+          style="margin-right: 20px"
+          type="submit"
+          class="btn btn-primary"
+        >
+          Register
+        </button>
+      </div>
+    </form>
+    <form class="form-inline" action="/login" method="GET">
+      <div class="form-group mb-2">
+        <button type="submit" class="btn btn-primary">Login</button>
+      </div>
+    </form>
+    <% } %>
+  </nav>
 </header>
