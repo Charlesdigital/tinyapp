@@ -95,12 +95,14 @@ app.get("/login", (req, res) => {
 
 //---------------------------------------------------------> Post
 app.post("/urls", (req, res) => {
-  const shortRandomURL = generateRandomString();
+  const userId = req.cookies["userId"];
 
-  urlDatabase[shortRandomURL] = req.body.longURL;
-  console.log("test2", urlDatabase[shortRandomURL]);
-  console.log("test 3", urlDatabase);
-  console.log("test1", req.body); // Log the POST request body to the console
+  if (!userId) {
+    console.log("error");
+    return res.redirect("/login");
+  }
+  const shortRandomURL = generateRandomString();
+  urlDatabase[shortRandomURL] = { longURL: req.body.longURL, userID: userId };
   res.redirect(`/urls/${shortRandomURL}`);
 });
 
