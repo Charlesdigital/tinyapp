@@ -59,10 +59,11 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
+  const userId = req.cookies["userId"];
   const templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL],
-    username: req.cookies["username"],
+    user: users[userId],
   };
   res.render("urls_show", templateVars);
 });
