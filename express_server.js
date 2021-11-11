@@ -105,6 +105,12 @@ app.get("/urls/:shortURL", (req, res) => {
 
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL];
+  if (!urlDatabase.hasOwnProperty(req.params.shortURL)) {
+    return res.render("urls_error", {
+      message: "Error, Invalid Short URL",
+      user: null,
+    });
+  }
   if (longURL.startsWith("http")) {
     res.redirect(longURL);
   } else res.redirect("https://" + longURL);
@@ -189,6 +195,6 @@ app.post("/register", (req, res) => {
     users[userId] = { id: userId, email: email, password: password };
     res.cookie("user_id", userId);
     //link the cookie to the generated ID
-    return res.redirect("/urls");
+    return res.redirect("/login");
   }
 });
