@@ -134,7 +134,7 @@ app.post("/login", (req, res) => {
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("username"); //delete cookie when the person logs out
+  res.clearCookie("userId"); //delete cookie when the person logs out
   res.redirect("/urls");
 });
 
@@ -155,19 +155,3 @@ app.post("/register", (req, res) => {
     return res.redirect("/urls");
   }
 });
-
-// app.get("/", (req, res) => {
-//   res.send("Hello!");
-// });
-
-// app.get("/urls.json", (req, res) => {
-//   res.json(urlDatabase);
-// });
-
-// app.get("/hello", (req, res) => {
-//   res.send("<html><body>Hello <b>World</b></body></html>\n");
-// });
-
-// app.get("/urls/new", (req, res) => {
-//   res.render("urls_new");
-// });
