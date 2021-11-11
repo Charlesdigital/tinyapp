@@ -13,14 +13,6 @@ const generateRandomString = function () {
     .substring(1);
 };
 
-const lookUpUserByEmail = function (email, users) {
-  for (const user in users) {
-    if (users[user].email === email) {
-      return users[user];
-    }
-  }
-};
-
 app.use(cookieParser());
 
 const urlDatabase = {
@@ -41,18 +33,28 @@ const users = {
   },
 };
 
+const lookUpUserByEmail = function (email, users) {
+  for (const user in users) {
+    if (users[user].email === email) {
+      return users[user];
+    }
+  }
+};
+
 //port will not work without this
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase, username: req.cookies["username"] };
+  const userId = req.cookies["userId"];
+  const templateVars = { urls: urlDatabase, user: users[userId] };
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
-  const templateVars = { username: req.cookies["username"] };
+  const userId = req.cookies["userId"];
+  const templateVars = { user: users[userId] };
   res.render("urls_new", templateVars); //render this page and passing variable you can use later
 });
 
@@ -116,7 +118,8 @@ app.post("/login", (req, res) => {
     res.statusCode = 400;
     return res.send("Empty email and password.");
   }
-  const userInfo = lookUpUserByEmail(req.body.email);
+  const userInfo = lookUpUserByEmail(req.body.email, users);
+  console.log("test1", userInfo);
   if (userInfo && userInfo.password !== req.body.password) {
     res.statusCode = 403;
     return res.send("Wrong password");
