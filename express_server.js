@@ -41,6 +41,17 @@ const lookUpUserByEmail = function (email, users) {
   }
 };
 
+// Gets a list of longURLs with same id
+const urlsForUser = function (id, urlDatabase) {
+  const listOfUrls = {};
+  for (const shortURL in urlDatabase) {
+    if (id === urlDatabase[shortURL].userID) {
+      listOfUrls[shortURL] = urlDatabase[shortURL];
+    }
+  }
+  return listOfUrls;
+};
+
 //port will not work without this
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
@@ -48,7 +59,15 @@ app.listen(PORT, () => {
 
 app.get("/urls", (req, res) => {
   const userId = req.cookies["userId"];
-  const templateVars = { urls: urlDatabase, user: users[userId] };
+  if (!userId) {
+    return res.render("urls_error", {
+      message: "Please Register or Login",
+      user: null,
+    });
+  }
+  const getUrls = urlsForUser(userId, urlDatabase);
+  const templateVars = { urls: getUrls, user: users[userId] };
+
   res.render("urls_index", templateVars);
 });
 
