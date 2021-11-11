@@ -153,7 +153,10 @@ app.post("/urls/:id/delete", (req, res) => {
 
 //Post to edit the URL
 app.post("/urls/:id/edit", (req, res) => {
-  console.log(urlDatabase);
+  const userId = req.cookies["userId"];
+  if (!userId) {
+    return res.sendStatus(401);
+  }
   urlDatabase[req.params.id] = req.body.longURL;
   console.log(urlDatabase);
   res.redirect("/urls/");
