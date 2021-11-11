@@ -142,7 +142,10 @@ app.post("/urls", (req, res) => {
 });
 
 app.post("/urls/:id/delete", (req, res) => {
-  console.log("first", req.params);
+  const userId = req.cookies["userId"];
+  if (!userId) {
+    return res.sendStatus(401);
+  }
   delete urlDatabase[req.params.id];
   console.log("second", urlDatabase);
   res.redirect("/urls");
