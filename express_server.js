@@ -45,9 +45,7 @@ const lookUpUserByEmail = function (email, users) {
 const urlsForUser = function (id, urlDatabase) {
   const listOfUrls = {};
   for (const shortURL in urlDatabase) {
-    if (id === urlDatabase[shortURL].userID) {
-      listOfUrls[shortURL] = urlDatabase[shortURL];
-    }
+    listOfUrls[shortURL] = urlDatabase[shortURL];
   }
   return listOfUrls;
 };
@@ -73,14 +71,16 @@ app.get("/urls", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   const userId = req.cookies["userId"];
+  const getUrls = urlsForUser(userId, urlDatabase);
+
   if (!userId) {
     return res.render("urls_error", {
       message: "Please Register or Login",
       user: null,
     });
   }
-  const templateVars = { user: users[userId] };
-  res.render("urls_index", templateVars);
+  const templateVars = { urls: getUrls, user: users[userId] };
+  res.render("urls_new", templateVars);
 });
 
 app.get("/urls/:shortURL", (req, res) => {
@@ -90,7 +90,17 @@ app.get("/urls/:shortURL", (req, res) => {
     longURL: urlDatabase[req.params.shortURL],
     user: users[userId],
   };
-  res.render("urls_show", templateVars);
+  console.log("test 4", urlDatabase);
+  console.log("testing 2", urlDatabase.hasOwnProperty(req.params.shortURL)); //has ownProperty check if they key is in the object, return true or false
+  console.log("testing 3", templateVars.longURL);
+
+  if (!urlDatabase.hasOwnProperty(req.params.shortURL)) {
+    return res.render("urls_error", {
+      message: "Error, Invalid Short URL",
+      user: userId,
+    });
+  }
+  return res.render("urls_show", templateVars);
 });
 
 app.get("/u/:shortURL", (req, res) => {
@@ -121,7 +131,7 @@ app.post("/urls", (req, res) => {
     return res.redirect("/login");
   }
   const shortRandomURL = generateRandomString();
-  urlDatabase[shortRandomURL] = { longURL: req.body.longURL, userID: userId };
+  urlDatabase[shortRandomURL] = req.body.longURL;
   res.redirect(`/urls/${shortRandomURL}`);
 });
 
