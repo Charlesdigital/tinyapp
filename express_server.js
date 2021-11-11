@@ -55,11 +55,13 @@ app.get("/urls", (req, res) => {
 app.get("/urls/new", (req, res) => {
   const userId = req.cookies["userId"];
   if (!userId) {
-    return res.redirect("/login");
-  } else {
-    const templateVars = { user: users[userId] };
-    res.render("urls_new", templateVars);
+    return res.render("urls_error", {
+      message: "Please Register or Login",
+      user: null,
+    });
   }
+  const templateVars = { user: users[userId] };
+  res.render("urls_index", templateVars);
 });
 
 app.get("/urls/:shortURL", (req, res) => {
