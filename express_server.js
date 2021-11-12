@@ -3,7 +3,7 @@ const cookieParser = require("cookie-parser");
 const app = express();
 const PORT = 8080; // default port 8080
 app.set("view engine", "ejs"); // tells express app to use EJS
-
+const bcrypt = require("bcryptjs");
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -30,12 +30,12 @@ const users = {
   aJ48lW: {
     id: "aJ48lW",
     email: "user@example.com",
-    password: "purple-monkey-dinosaur",
+    password: bcrypt.hashSync("purple-monkey-dinosaur", 10),
   },
   user2RandomID: {
     id: "user2RandomID",
     email: "user2@example.com",
-    password: "dishwasher-funk",
+    password: bcrypt.hashSync("dishwasher-funk", 10),
   },
 };
 
@@ -202,7 +202,7 @@ app.post("/login", (req, res) => {
   }
   const userInfo = lookUpUserByEmail(req.body.email, users);
   console.log("test1", userInfo);
-  if (userInfo && userInfo.password !== req.body.password) {
+  if (!(userInfo && bcrypt.compareSync(req.body.password, userInfo.password))) {
     res.statusCode = 403;
     return res.send("Wrong password");
   }
@@ -221,7 +221,7 @@ app.post("/logout", (req, res) => {
 
 app.post("/register", (req, res) => {
   const email = req.body.email;
-  const password = req.body.password;
+  const password = bcrypt.hashSync(req.body.password, 10);
   const userId = generateRandomString();
   if (!email || !password) {
     res.statusCode = 400;
