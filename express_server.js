@@ -5,27 +5,16 @@ const cookieSession = require("cookie-session");
 
 app.set("view engine", "ejs"); // tells express app to use EJS
 const bcrypt = require("bcryptjs");
+const {
+  generateRandomString,
+  lookUpUserByEmail,
+  urlsForUser,
+  urlDatabase,
+} = require("./helpers");
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: true }));
 
-const generateRandomString = function () {
-  return Math.floor((1 + Math.random()) * 0x1000000)
-    .toString(16)
-    .substring(1);
-};
-
 app.use(cookieSession({ name: "session", keys: ["key1", "key2"] }));
-
-const urlDatabase = {
-  b6UTxQ: {
-    longURL: "https://www.tsn.ca",
-    userID: "aJ48lW",
-  },
-  i3BoGr: {
-    longURL: "https://www.google.ca",
-    userID: "aJ48lW",
-  },
-};
 
 const users = {
   aJ48lW: {
@@ -38,26 +27,6 @@ const users = {
     email: "user2@example.com",
     password: bcrypt.hashSync("dishwasher-funk", 10),
   },
-};
-
-const lookUpUserByEmail = function (email, users) {
-  for (const user in users) {
-    if (users[user].email === email) {
-      return users[user];
-    }
-  }
-};
-
-// Gets a list of longURLs with same id
-const urlsForUser = function (id, urlDatabase) {
-  const listOfUrls = {};
-  for (const shortURL in urlDatabase) {
-    if (id === urlDatabase[shortURL].userID) {
-      listOfUrls[shortURL] = urlDatabase[shortURL];
-    }
-  }
-  console.log(listOfUrls);
-  return listOfUrls;
 };
 
 //port will not work without this
