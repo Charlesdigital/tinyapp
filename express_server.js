@@ -1,9 +1,6 @@
+// IMPORTING MODULES
 const express = require("express");
-const app = express();
-const PORT = 8080; // default port 8080
 const cookieSession = require("cookie-session");
-
-app.set("view engine", "ejs"); // tells express app to use EJS
 const bcrypt = require("bcryptjs");
 const {
   generateRandomString,
@@ -11,10 +8,15 @@ const {
   urlsForUser,
   urlDatabase,
 } = require("./helpers");
-const bodyParser = require("body-parser");
-app.use(bodyParser.urlencoded({ extended: true }));
 
+// SET/CONFIGURE SEVER AND MIDDLEWARE (all the setting for passing requests)
+const app = express();
+const PORT = 8080; // default port 8080
+app.set("view engine", "ejs"); // tells express app to use EJS
+app.use(express.urlencoded({ extended: true }));// allows the sever pass any type data, that is not only text
+app.use(express.json()); // allows your server pass json documents/data
 app.use(cookieSession({ name: "session", keys: ["key1", "key2"] }));
+
 
 const users = {
   aJ48lW: {
@@ -29,105 +31,118 @@ const users = {
   },
 };
 
-app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
+
+// ROUTES/ENDPOINTS
+app.get('/', (req, res) => {
+  const {userId} = req.session;
+  if (!userId) {
+    return res.redirect("/login");
+  }
+  res.redirect("/urls");
 });
 
 app.get("/urls", (req, res) => {
-  const userId = req.session.user_id;
-  if (!userId) {
+  const {user_id} = req.session;
+  if (!user_id) {
     return res.render("urls_error", {
       message: "Please Register or Login",
       user: null,
     });
   }
-  const getUrls = urlsForUser(userId, urlDatabase);
-  const templateVars = { urls: getUrls, user: users[userId] };
+  const getUrls = urlsForUser(user_id, urlDatabase);
+  const templateVars = { urls: getUrls, user: users[user_id] };
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
-  const userId = req.session.user_id;
-  const getUrls = urlsForUser(userId, urlDatabase);
+  const {user_id} = req.session;
+  const getUrls = urlsForUser(user_id, urlDatabase);
 
-  if (!userId) {
+  if (!user_id) {
     return res.render("urls_error", {
       message: "Please Register or Login",
       user: null,
     });
   }
-  const templateVars = { urls: getUrls, user: users[userId] };
+  const templateVars = { urls: getUrls, user: users[user_id] };
   res.render("urls_new", templateVars);
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  const userId = req.session.user_id;
+  const {user_id} = req.session;
   const shortURL = req.params.shortURL;
   if (!urlDatabase.hasOwnProperty(req.params.shortURL)) {
     return res.render("urls_error", {
       message: "Error, Invalid Short URL",
-      user: userId,
+      user: user_id,
     });
   }
-  if (userId !== urlDatabase[shortURL]["userID"]) {
+  if (user_id !== urlDatabase[shortURL]["userID"]) {
     return res.render("urls_error", {
       message: "Error, No access",
-      user: userId,
+      user: user_id,
     });
   }
   const templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL]["longURL"],
-    user: users[userId],
+    user: users[user_id],
   };
   return res.render("urls_show", templateVars);
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  const userId = req.session.user_id;
+  const {shortURL} = req.params;
 
-  const shortURL = req.params.shortURL;
-  const longURL = urlDatabase[shortURL]["longURL"];
-
-  if (!urlDatabase.hasOwnProperty(req.params.shortURL)) {
-    return res.render("urls_error", {
+  const validShortUrl = urlDatabase.hasOwnProperty(shortURL);
+  if (!validShortUrl) {
+    const templateVars = {
       message: "Error, Invalid Short URL",
-      user: userId,
-    });
+      user: null,
+    };
+    return res.render("urls_error", templateVars);
   }
+
+  const longURL = urlDatabase[shortURL].longURL;
   if (longURL.includes("http")) {
     res.redirect(longURL);
-  } else res.redirect("https://" + longURL);
+  }
+
+  return res.redirect("https://" + longURL);
 });
 
 app.get("/register", (req, res) => {
+  const {user_id} = req.session;
+  if (user_id) {
+    return res.redirect("/urls");
+  }
   const templateVars = { user: null };
   res.render("urls_register", templateVars);
 });
 
 app.get("/login", (req, res) => {
-  const userId = req.session.user_id;
-  const templateVars = { user: users[userId] };
+  const {user_id} = req.session;
+  const templateVars = { user: users[user_id] };
   res.render("urls_login", templateVars);
 });
 
 //---------------------------------------------------------> Post
 app.post("/urls", (req, res) => {
-  const userId = req.session.user_id;
-  if (!userId) {
+  const {user_id} = req.session;
+  if (!user_id) {
     return res.redirect("/login");
   }
   const shortRandomURL = generateRandomString();
   urlDatabase[shortRandomURL] = {
     longURL: req.body.longURL,
-    userID: userId,
+    userID: user_id,
   };
   res.redirect("/urls/");
 });
 
 app.post("/urls/:id/delete", (req, res) => {
-  const userId = req.session.user_id;
-  if (!userId) {
+  const {user_id} = req.session;
+  if (!user_id) {
     return res.sendStatus(401);
   }
   delete urlDatabase[req.params.id];
@@ -136,14 +151,18 @@ app.post("/urls/:id/delete", (req, res) => {
 
 //Post to edit the URL
 app.post("/urls/:id/edit", (req, res) => {
-  const userId = req.session.user_id;
-  if (!userId) {
+  const {user_id} = req.session;
+  if (!user_id) {
     return res.sendStatus(401);
   }
-  urlDatabase[req.params.id] = {
-    longURL: req.body.longURL,
-    userID: userId,
-  };
+
+  const urlObject = urlDatabase[req.params.id];
+  if (!urlObject) {
+    return res.sendStatus(404);
+  }
+
+  const {longURL} = req.body;
+  urlObject.longURL = longURL;
   res.redirect("/urls/");
 });
 
@@ -171,19 +190,38 @@ app.post("/logout", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
-  const email = req.body.email;
-  const password = bcrypt.hashSync(req.body.password, 10);
-  const userId = generateRandomString();
-  if (!email || !password) {
-    res.statusCode = 400;
-    res.send("Empty email and password.");
-  } else if (lookUpUserByEmail(email, users)) {
-    res.statusCode = 400;
-    res.send("Username already created.");
-  } else {
-    users[userId] = { id: userId, email: email, password: password };
-    //Generate Id
-    req.session.user_id = userId;
-    return res.redirect("/login");
+  const {user_id} = req.session;
+  if (user_id) {
+    return res.status(400).send("User already logged in");
   }
+
+  const {email, password} = req.body;
+  if (!email || !password) {
+    return res.status(400).send("Empty email or password.");
+  }
+
+  const emailExists = lookUpUserByEmail(email, users)
+  if (emailExists) {
+    return res.status(400).send("Email already registered.");
+  }
+
+  const hashedPassword = bcrypt.hashSync(password, 10);
+  const userId = generateRandomString();  //Generate Id
+
+  users[userId] = { id: userId, email: email, password: hashedPassword };
+
+  req.session.user_id = userId;
+  return res.redirect("/urls");
+
 });
+
+//LISTENER - ALLOWING INCOMING REQUESTS
+app.listen(PORT, () => {
+  console.log(`Example app listening on port ${PORT}!`);
+});
+
+//4 steps
+//1. import requirements
+//2. set and configure sever and middlwares
+//3. set the different end points
+//4. invoke the listener to allow incoming requests
