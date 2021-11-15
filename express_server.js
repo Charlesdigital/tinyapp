@@ -222,6 +222,6 @@ app.listen(PORT, () => {
 
 //4 steps
 //1. import requirements
-//2. set and configure sever and middlwares
+//2. set and configure sever and middlewares
 //3. set the different end points
 //4. invoke the listener to allow incoming requests
