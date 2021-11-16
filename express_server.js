@@ -9,11 +9,11 @@ const {
   urlDatabase,
 } = require("./helpers");
 
-// SET/CONFIGURE SEVER AND MIDDLEWARE (all the setting for passing requests)
+// SET/CONFIGURE SEVER AND MIDDLEWARE (all the settings for passing requests)
 const app = express();
 const PORT = 8080; // default port 8080
 app.set("view engine", "ejs"); // tells express app to use EJS
-app.use(express.urlencoded({ extended: true }));// allows the sever pass any type data, that is not only text
+app.use(express.urlencoded({ extended: true }));// allows the sever to pass any data type, that is not only text
 app.use(express.json()); // allows your server pass json documents/data
 app.use(cookieSession({ name: "session", keys: ["key1", "key2"] }));
 
